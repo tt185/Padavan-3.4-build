@@ -1,0 +1,74 @@
+#修改 targets 型号，注意名称要与configs/templates/目录下的名字相同
+name: Build Padavan hanwckf YK-L1
+
+on: 
+  workflow_dispatch:
+    inputs:
+  watch:                                                        # 监视操作
+    types: [started]                                            # 点击 Star 之后
+env:
+  build_dir: /opt/rt-n56u                                       # 源码目录
+  images_dir: /opt/images                                       # 固件目录
+  work_dir: /opt/rt-n56u/trunk                                  # 工作目录
+  config_dir: /opt/rt-n56u/trunk/configs/templates              # 设备模板目录
+  src_git: https://github.com/tt185/rt-n56u.git                 # 源码地址
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-20.04
+    if: github.event.repository.owner.id == github.event.sender.id  # 自己点的 Star
+    env:
+      build_variant: ${{ matrix.build_variant }}
+      targets: ${{ matrix.targets }}
+    strategy:
+      matrix:
+        include:
+          - build_variant: "mt7620"    #编译出错
+            targets: "YK-L1"           #设置固件型号,空格分隔
+          #- build_variant: "mt7621"
+            #targets: "XY-C1"           #设置固件型号,空格分隔
+    steps:
+      - name: 导入主分支
+        uses: actions/checkout@v4
+      - name: 准备编译环境
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |                         # 安装依赖包
+          sudo apt update
+          sudo apt install libtool-bin gperf python3-docutils autopoint gettext
+          sudo timedatectl set-timezone 'Asia/Shanghai'  # 设置时区
+      - name: 克隆源码
+        run: |
+          git clone --depth=1 $src_git $build_dir
+      - name: 运行shellcheck
+        run: |
+          cd $work_dir
+          if [ -f ./tools/shellcheck.sh ]; then sh ./tools/shellcheck.sh; fi
+      - name: 准备构建工具链
+        run: |
+          mkdir -p $images_dir
+          cd $build_dir/toolchain-mipsel
+          sh dl_toolchain.sh
+      - name: 设置 golang 环境
+        run: |
+          cp -f padavan/hanwckf/go.sh $(pwd)
+          sudo chmod 777 ./go.sh
+          bash ./go.sh
+      - name: 修改自定义配置
+        run: |                         # 拷贝文件并修改
+          if [ -d padavan/hanwckf ]; then cp -rf padavan/hanwckf/* $work_dir; echo "复制padavan/hanwckf目录下文件"; fi
+          cd $work_dir
+          for m in $targets; do if [ -f $m.sh ]; then echo "执行 $m.sh"; sh ./$m.sh; fi; done
+      - name: 开始编译固件
+        run: |
+          cd $work_dir
+          for m in $targets; do fakeroot ./build_firmware_ci $m; \
+          if [ $? = 0 ]; then cp -f images/*.trx $images_dir/Hanwckf_${m}_$(date +%Y%m%d).trx; else exit 1; fi; \
+          ./clear_tree_simple >/dev/null 2>&1; done
+      - name: 固件上传
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Hanwckf_3.4_${{ env.build_variant }}
+          path: ${{ env.images_dir }}
