@@ -2,6 +2,8 @@
 name: Build Padavan chongshengB YK-L1
 
 on: 
+  workflow_dispatch:
+    inputs:
   watch:                                                        # 监视操作
     types: [started]                                            # 点击 Star 之后
 env:
