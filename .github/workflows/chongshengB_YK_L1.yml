@@ -1,5 +1,5 @@
 #修改 targets 型号，注意名称要与configs/templates/目录下的名字相同
-name: Build Padavan hanwckf YK-L1
+name: Build Padavan chongshengB YK-L1
 
 on: 
   workflow_dispatch:
@@ -11,7 +11,7 @@ env:
   images_dir: /opt/images                                       # 固件目录
   work_dir: /opt/rt-n56u/trunk                                  # 工作目录
   config_dir: /opt/rt-n56u/trunk/configs/templates              # 设备模板目录
-  src_git: https://github.com/tt185/rt-n56u.git                 # 源码地址
+  src_git: https://github.com/chongshengB/rt-n56u.git           # 源码地址
 
 jobs:
   build:
@@ -52,23 +52,23 @@ jobs:
           sh dl_toolchain.sh
       - name: 设置 golang 环境
         run: |
-          cp -f padavan/hanwckf/go.sh $(pwd)
+          cp -f padavan/chongshengB/go.sh $(pwd)
           sudo chmod 777 ./go.sh
           bash ./go.sh
       - name: 修改自定义配置
         run: |                         # 拷贝文件并修改
-          if [ -d padavan/hanwckf ]; then cp -rf padavan/hanwckf/* $work_dir; echo "复制padavan/hanwckf目录下文件"; fi
+          if [ -d padavan/chongshengB ]; then cp -rf padavan/chongshengB/* $work_dir; echo "复制padavan/chongshengB目录下文件"; fi
           cd $work_dir
           for m in $targets; do if [ -f $m.sh ]; then echo "执行 $m.sh"; sh ./$m.sh; fi; done
       - name: 开始编译固件
         run: |
           cd $work_dir
           for m in $targets; do fakeroot ./build_firmware_ci $m; \
-          if [ $? = 0 ]; then cp -f images/*.trx $images_dir/Hanwckf_${m}_$(date +%Y%m%d).trx; else exit 1; fi; \
+          if [ $? = 0 ]; then cp -f images/*.trx $images_dir/chongshengB_${m}_$(date +%Y%m%d).trx; else exit 1; fi; \
           ./clear_tree_simple >/dev/null 2>&1; done
       - name: 固件上传
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: Hanwckf_3.4_${{ env.build_variant }}
+          name: chongshengB_3.4_${{ env.build_variant }}
           path: ${{ env.images_dir }}
