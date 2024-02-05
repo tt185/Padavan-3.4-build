@@ -2,8 +2,6 @@
 name: Build Padavan chongshengB YK-L1
 
 on: 
-  workflow_dispatch:
-    inputs:
   watch:                                                        # 监视操作
     types: [started]                                            # 点击 Star 之后
 env:
@@ -50,11 +48,6 @@ jobs:
           mkdir -p $images_dir
           cd $build_dir/toolchain-mipsel
           sh dl_toolchain.sh
-      - name: 设置 golang 环境
-        run: |
-          cp -f padavan/chongshengB/go.sh $(pwd)
-          sudo chmod 777 ./go.sh
-          bash ./go.sh
       - name: 修改自定义配置
         run: |                         # 拷贝文件并修改
           if [ -d padavan/chongshengB ]; then cp -rf padavan/chongshengB/* $work_dir; echo "复制padavan/chongshengB目录下文件"; fi
