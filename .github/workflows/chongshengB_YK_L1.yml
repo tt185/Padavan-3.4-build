@@ -16,7 +16,7 @@ env:
 jobs:
   build:
     name: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id  # 自己点的 Star
     env:
       build_variant: ${{ matrix.build_variant }}
@@ -24,8 +24,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - build_variant: "mt7620"    #编译出错
-            targets: "YK-L1"           #设置固件型号,空格分隔
+          #- build_variant: "mt7620" 
+          #  targets: "YK-L1"           #设置固件型号,空格分隔
           - build_variant: "mt7628"
             targets: "MI-NANO"         #设置固件型号,空格分隔
     steps:
