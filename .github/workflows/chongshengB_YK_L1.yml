@@ -26,8 +26,8 @@ jobs:
         include:
           - build_variant: "mt7620"    #编译出错
             targets: "YK-L1"           #设置固件型号,空格分隔
-          #- build_variant: "mt7621"
-            #targets: "XY-C1"           #设置固件型号,空格分隔
+          - build_variant: "mt7628"
+            targets: "MI-NANO"         #设置固件型号,空格分隔
     steps:
       - name: 导入主分支
         uses: actions/checkout@v4
